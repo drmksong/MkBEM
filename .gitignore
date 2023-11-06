@@ -2,3 +2,5 @@
 *.~*
 *~
 obsolete
+.DS_Store
+*bak
