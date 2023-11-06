@@ -11,6 +11,8 @@ SET(CMAKE_EXE_LINKER_FLAGS -pg)
 
 # for mac
 INCLUDE_DIRECTORIES(src) 
+# INCLUDE_DIRECTORIES(/Users/myungkyusong/Documents/Develop/01_THMBEMSPH/01_MkLIB/src)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/../MkInclude)
 INCLUDE_DIRECTORIES(/opt/homebrew/include)
 
 # for windows
@@ -20,6 +22,7 @@ ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(tests)
 
 LINK_DIRECTORIES(/opt/homebrew/lib)
+LINK_DIRECTORIES(/Users/myungkyusong/Documents/Develop/01_THMBEMSPH/01_MkLIB)
 
 
 

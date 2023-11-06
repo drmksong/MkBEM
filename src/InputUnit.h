@@ -12,9 +12,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "MkInt.h"
-#include "MkDouble.h"
-#include "MkMatrix.h"
+#include "MkArray.hpp"
+#include "MkMatrix.hpp"
 
 //#ifndef expl 
 //#define expl exp
@@ -77,8 +76,8 @@ struct TBEMData {
    MkDouble OriVolStrain, OriTemp, OriPress;
    MkDouble CurVolStrain, CurTemp, CurPress;
    MkDouble Stress, ThermFlux, FlowRate;   // internal secondary
-   MkMatrix G,H;
-   MkMatrix g,h;
+   MkMatrix<double> G,H;
+   MkMatrix<double> g,h;
 // member function
    TBEMData();
    TBEMData & operator =(TBEMData &data);

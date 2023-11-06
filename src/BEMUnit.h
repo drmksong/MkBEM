@@ -81,7 +81,7 @@ public:
         __fastcall void InterPrimary();
         __fastcall void InterSecondary();
 
-        __fastcall void Solve(MkMatrix A,MkDouble B,double &D,int N);
+        __fastcall void Solve(MkMatrix<double> A,MkDouble B,double &D,int N);
         __fastcall void Solve();
 
         __fastcall void Quad(const int i,const int j,const int k);

@@ -3,4 +3,6 @@
 *~
 obsolete
 .DS_Store
-*bak
+*.*bak
+
+build

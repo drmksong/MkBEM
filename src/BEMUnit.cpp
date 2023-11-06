@@ -186,16 +186,16 @@ void __fastcall TBEM::Execute()
   char str[256];
 
   CalcParam();
-  FData.BcBk.CopyFrom(FData.Bc);
+  FData.BcBk=(FData.Bc);// CopyFrom is replaced with = operator which does copying
   for (int nt=0;nt<FData.NT;nt++) {
       Tau = FData.Time(nt);
       nt > 0 ? DTau = FData.Time(nt) - FData.Time(nt-1) : DTau = FData.Time(nt);
       NN = FData.N;
       for (i = 0 ; i<NN;i++) {
-          sprintf(str," %d-th Traction X is %lf ",i, FData.F(4*i));
+          snprintf(str,256," %d-th Traction X is %lf ",i, FData.F(4*i));
       }
 
-      if (nt!=0) FData.Bc.CopyFrom(FData.BcBk);
+      if (nt!=0) FData.Bc=(FData.BcBk);// CopyFrom is replaced with = operator which does copying
 
 //  { Compute matrices G and H, and form the system A X = F }
       puts("Compute matrices G and H, and form the system A X = F ");
@@ -208,7 +208,7 @@ void __fastcall TBEM::Execute()
       Solve();
 
       for (i = 0 ; i<NN ;i++) {
-          sprintf(str," %d-th Traction X is %lf ",i, FData.F(4*i));
+          snprintf(str,256," %d-th Traction X is %lf ",i, FData.F(4*i));
           puts(str);
       }
 
@@ -263,17 +263,18 @@ void __fastcall TBEM::OutDeform()
           UY(i) += FData.Displ(2*neb[k]+1)/cnt;
       }
   }
-  for (int j=0;j<FData.NE;j++) {
-      for (int k=0;k<3;k++)
-           fprintf(fp,"line %lf %lf %lf %lf \n", FData.Node(FData.Elem(j,k),0)+UX(FData.Elem(j,k))*100,
-                                            FData.Node(FData.Elem(j,k),1)+UY(FData.Elem(j,k))*100,
-                                            FData.Node(FData.Elem(j,k+1),0)+UX(FData.Elem(j,k+1))*100,
-                                            FData.Node(FData.Elem(j,k+1),1)+UY(FData.Elem(j,k+1))*100);
-      fprintf(fp,"line %lf %lf %lf %lf \n", FData.Node(FData.Elem(j,3),0)+UX(FData.Elem(j,3))*100,
-                                       FData.Node(FData.Elem(j,3),1)+UY(FData.Elem(j,3))*100,
-                                       FData.Node(FData.Elem(j,0),0)+UX(FData.Elem(j,0))*100,
-                                       FData.Node(FData.Elem(j,0),1)+UX(FData.Elem(j,0))*100);
-  }
+  // temp remark
+  // for (int j=0;j<FData.NE;j++) {
+  //     for (int k=0;k<3;k++)
+  //          fprintf(fp,"line %lf %lf %lf %lf \n", FData.Node(FData.Elem(j,k),0)+UX(FData.Elem(j,k))*100,
+  //                                           FData.Node(FData.Elem(j,k),1)+UY(FData.Elem(j,k))*100,
+  //                                           FData.Node(FData.Elem(j,k+1),0)+UX(FData.Elem(j,k+1))*100,
+  //                                           FData.Node(FData.Elem(j,k+1),1)+UY(FData.Elem(j,k+1))*100);
+  //     fprintf(fp,"line %lf %lf %lf %lf \n", FData.Node(FData.Elem(j,3),0)+UX(FData.Elem(j,3))*100,
+  //                                      FData.Node(FData.Elem(j,3),1)+UY(FData.Elem(j,3))*100,
+  //                                      FData.Node(FData.Elem(j,0),0)+UX(FData.Elem(j,0))*100,
+  //                                      FData.Node(FData.Elem(j,0),1)+UX(FData.Elem(j,0))*100);
+  // }
   fclose(fp);
 }
 
@@ -431,16 +432,16 @@ void __fastcall TBEM::Sys()
   for (int j = 0 ; j < NN ; j++) {
     for (int i = 0 ; i < NN ; i++) {
        if (i==0) fputs("|",outfile);
-       sprintf(str,"%7.4f ",FData.G(i,j));
+       snprintf(str,256,"%7.4f ",FData.G(i,j));
        fputs(str,outfile);
        if (i==NN-1) fputs("|",outfile);
     }
-    sprintf(str,"%7.5f=",FData.Bc(j));
+    snprintf(str,256,"%7.5f=",FData.Bc(j));
     fputs(str,outfile);
 
     fputs("|",outfile);
 
-    sprintf(str,"%7.4f\n",FData.F(j));
+    snprintf(str,256,"%7.4f\n",FData.F(j));
     fputs(str,outfile);
   }
   fclose(outfile);
@@ -552,16 +553,16 @@ void __fastcall TBEM::SysStep()
   for (int j = 0 ; j < NN ; j++) {
     for (int i = 0 ; i < NN ; i++) {
        if (i==0) fputs("|",outfile);
-       sprintf(str,"%7.4f ",FData.G(i,j));
+       snprintf(str,256,"%7.4f ",FData.G(i,j));
        fputs(str,outfile);
        if (i==NN-1) fputs("|",outfile);
     }
-    sprintf(str,"%7.5f=",FData.Bc(j));
+    snprintf(str,256,"%7.5f=",FData.Bc(j));
     fputs(str,outfile);
 
     fputs("|",outfile);
 
-    sprintf(str,"%7.4f\n",FData.F(j));
+    snprintf(str,256,"%7.4f\n",FData.F(j));
     fputs(str,outfile);
   }
   fclose(outfile);
@@ -792,7 +793,7 @@ void __fastcall TBEM::Solve()
   MkVector X,B(FData.F);
 
   A.Solve(B,stLUD);
-  FData.F.CopyFrom(B.GetDouble());
+  FData.F=(B.GetDouble());// CopyFrom is replaced with = operator which does copying
 }
 //---------------------------------------------------------------------------
 void __fastcall TBEM::Solve(MkMatrix A, MkDouble B,double &D,int N)
@@ -1433,7 +1434,7 @@ void __fastcall TBEM::Output()
     fprintf(outfile, "Time = %lf year\n", (Tau)/3600/24/365);
 
     for ( i=0 ; i<FData.N ; i++ ) {
-      sprintf(str,"(%10.5f, %10.5f) %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f \n",
+      snprintf(str,256,"(%10.5f, %10.5f) %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f \n",
           FData.Xm(i),FData.Ym(i),FData.Bc(4*i),FData.Bc(4*i+1),FData.Bc(4*i+2)+283,FData.Bc(4*i+3),FData.F(4*i),FData.F(4*i+1),FData.F(4*i+2),FData.F(4*i+3));
       fputs(str,outfile);
     }
@@ -1442,14 +1443,14 @@ void __fastcall TBEM::Output()
       fputs("       	Interior Points Displacement    \n",outfile);
       fputs("      (Xi,Yi)   Disp X   Disp Y  \n",outfile);
       for ( k=0 ; k<FData.L ; k++ ) {
-        sprintf(str,"(%10.5f,%10.5f) %15.5f %15.5f %15.5f %15.5f\n",FData.Xi(k),FData.Yi(k),FData.Displ(2*k),FData.Displ(2*k+1),FData.Temp(k)+283,FData.Press(k));
+        snprintf(str,256,"(%10.5f,%10.5f) %15.5f %15.5f %15.5f %15.5f\n",FData.Xi(k),FData.Yi(k),FData.Displ(2*k),FData.Displ(2*k+1),FData.Temp(k)+283,FData.Press(k));
         fputs(str,outfile);
       }
       fputs("",outfile);
       fputs("       	Interior Points Stress    \n",outfile);
       fputs("      (Xi,Yi)   Stress X   Stress Y  \n",outfile);
       for ( k=0 ; k<FData.L ; k++ ) {
-        sprintf(str,"(%10.5f,%10.5f) %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f\n",
+        snprintf(str,256,"(%10.5f,%10.5f) %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f\n",
                        FData.Xi(k),FData.Yi(k),FData.Stress(3*k),FData.Stress(3*k+1),FData.Stress(3*k+2),FData.ThermFlux(2*k),FData.ThermFlux(2*k+1),FData.FlowRate(2*k),FData.FlowRate(2*k+1));
         fputs(str,outfile);
       }
@@ -1459,20 +1460,20 @@ void __fastcall TBEM::Output()
       for (int j = 0 ; j < NN ; j++) {
         for (int i = 0 ; i < NN ; i++) {
            if (i==0) fputs("|",outfile);
-           sprintf(str," %9.5f ",FData.G(4*i+1,4*j+1));
+           snprintf(str,256," %9.5f ",FData.G(4*i+1,4*j+1));
            fputs(str,outfile);
            if (i==NN-1) fputs("|",outfile);
         }
-        sprintf(str," %9.5f = ",FData.F(4*j+1));
+        snprintf(str,256," %9.5f = ",FData.F(4*j+1));
         fputs(str,outfile);
 
         for (int i = 0 ; i < NN ; i++) {
            if (i==0) fputs("|",outfile);
-           sprintf(str," %9.5f ",FData.H(4*i+1,4*j+1));
+           snprintf(str,256," %9.5f ",FData.H(4*i+1,4*j+1));
            fputs(str,outfile);
            if (i==NN-1) fputs("|",outfile);
         }
-        sprintf(str," %9.5f \n",FData.Bc(4*j+1));
+        snprintf(str,256," %9.5f \n",FData.Bc(4*j+1));
         fputs(str,outfile);
       }
 */
@@ -2720,20 +2721,20 @@ void __fastcall TBEM::Calcg(double Xp,double Yp, double X1,double Y1,double X2,d
                  +a2_ij/(eta_22)*exp(-eta_22)
                  +a3_ij/(eta_12)
                  -a4_ij*4*FData.Nu/(1-2*FData.Nu)
-                 +a5_ij*2*(1-FData.Nu)/(1-2*FData.Nu)  //4¸¦ 2·Î ¹Ù²ã¾ß ÇÑ´Ù.
+                 +a5_ij*2*(1-FData.Nu)/(1-2*FData.Nu)  //4ï¿½ï¿½ 2ï¿½ï¿½ ï¿½Ù²ï¿½ï¿½ ï¿½Ñ´ï¿½.
                  +2*FData.Nu /(1-2*FData.Nu)*(a1_ij*exp(-eta_11)
                                  -a2_ij*exp(-eta_22)))+
              2*rx3*( a1_ij*(2+eta_11)/(eta_11)*exp(-eta_11)
                     -a2_ij*(2+eta_22)/(eta_22)*exp(-eta_22)
                     -a3_ij*2/(eta_12)
-                    -2*a5_ij))*W(I)*HL;            // 2¸¦ »©¸Ô¾ú¾úÀ½.
+                    -2*a5_ij))*W(I)*HL;            // 2ï¿½ï¿½ ï¿½ï¿½ï¿½Ô¾ï¿½ï¿½ï¿½ï¿½ï¿½.
 
     g112 -= 1/(4*M_PI*FData.K_T*FData.K_P*Ra*(1-FData.Nu))
            *(ry*(-a1_ij/(eta_11)*exp(-eta_11)
                  +a2_ij/(eta_22)*exp(-eta_22)
                  +a3_ij/(eta_12)
                  -a4_ij*4*FData.Nu/(1-2*FData.Nu)
-                 +a5_ij*2*(1-FData.Nu)/(1-2*FData.Nu)   // 4¸¦ 2·Î ¹Ù²ã¾ß ÇÑ´Ù.
+                 +a5_ij*2*(1-FData.Nu)/(1-2*FData.Nu)   // 4ï¿½ï¿½ 2ï¿½ï¿½ ï¿½Ù²ï¿½ï¿½ ï¿½Ñ´ï¿½.
                  +2*FData.Nu /(1-2*FData.Nu)*(a1_ij*exp(-eta_11)
                                              -a2_ij*exp(-eta_22)))+
              2*rx2*ry*( a1_ij*(2+eta_11)/(eta_11)*exp(-eta_11)
@@ -2755,7 +2756,7 @@ void __fastcall TBEM::Calcg(double Xp,double Yp, double X1,double Y1,double X2,d
     g122 -= 1/(4*M_PI*FData.K_T*FData.K_P*Ra*(1-FData.Nu))
            *(rx*(-a1_ij/(eta_11)*exp(-eta_11)
                  +a2_ij/(eta_22)*exp(-eta_22)
-                 +a3_ij/(eta_12)     // eta_2 ·Î Àß¸øµÇ¾îÀÖÀ½.
+                 +a3_ij/(eta_12)     // eta_2 ï¿½ï¿½ ï¿½ß¸ï¿½ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½ï¿½.
                  -a4_ij*2
                  +a5_ij)+
              2*ry2*rx*( a1_ij*(2+eta_11)/(eta_11)*exp(-eta_11)
