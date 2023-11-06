@@ -1,0 +1,2 @@
+/usr/bin/ar qc "/Users/myungkyusong/Documents/Develop/01. THMBEMSPH_SRC/02. MkBEM/libMkBEM.a" CMakeFiles/MkBEM.dir/mainunit.cpp.o CMakeFiles/MkBEM.dir/bemunit.cpp.o CMakeFiles/MkBEM.dir/inputunit.cpp.o
+/usr/bin/ranlib "/Users/myungkyusong/Documents/Develop/01. THMBEMSPH_SRC/02. MkBEM/libMkBEM.a"
