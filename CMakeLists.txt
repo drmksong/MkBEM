@@ -10,24 +10,9 @@ SET(CMAKE_CXX_FLAGS -pg)
 SET(CMAKE_EXE_LINKER_FLAGS -pg)
 
 SET (INC_FILES
-        src/MkAbstract.hpp
-        src/MkArray.hpp 
-        src/MkColor.hpp
-        src/MkCircle.hpp
-        src/MkCylinder.hpp
-        src/MkCube.hpp
-        src/MkLine.hpp 
-        src/MkMatrix.hpp
-        src/MkMisc.hpp 
-        src/MkPlane.hpp
-        src/MkPoint.hpp 
-        src/MkPointData.hpp 
-        src/MkPolygon.hpp
-        src/MkRect.hpp
-        src/MkShape.hpp
-        src/MkSphere.hpp
-        src/MkTriangle.hpp    
-
+        src/mainunit.h
+        src/bemunit.h
+        src/inputunit.h
 )
 
 # for mac
@@ -46,9 +31,9 @@ LINK_DIRECTORIES(/opt/homebrew/lib)
 # LINK_DIRECTORIES(/Users/myungkyusong/Documents/Develop/01_THMBEMSPH/01_MkLIB)
 LINK_DIRECTORIES(${CMAKE_SOURCE_DIR}/../MkInclude)
 
-set_target_properties(MkLIB PROPERTIES PUBLIC_HEADER "${INC_FILES}")
-INSTALL(TARGETS MkLIB
-        LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/../MkLib
+set_target_properties(MkBEM PROPERTIES PUBLIC_HEADER "${INC_FILES}")
+INSTALL(TARGETS MkBEM
+        LIBRARY DESTINATION ${CMAKE_SOURCE_DIR}/../MkLIB
         PUBLIC_HEADER DESTINATION ${CMAKE_SOURCE_DIR}/../MkInclude
 )
 
