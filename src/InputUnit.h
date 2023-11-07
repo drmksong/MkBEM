@@ -78,6 +78,7 @@ struct TBEMData {
    MkDouble Stress, ThermFlux, FlowRate;   // internal secondary
    MkMatrix<double> G,H;
    MkMatrix<double> g,h;
+   
 // member function
    TBEMData();
    TBEMData & operator =(TBEMData &data);
@@ -88,6 +89,7 @@ class TBEMInput {
 private:
    char FileName[256];
    TBEMData FData;
+   int _i0=0, _i1=1, _i2=2, _i3=3; 
 public:
    TBEMInput();
    void SetFileName(char *fname){strcpy(FileName,fname);}

@@ -403,13 +403,14 @@ void __fastcall TBEM::Sys()
   for (i=0; i < FData.N ; i++) {
     double x,y;
     int I;
+    int i0=0,i1=1,i2=2,i3=3;
     
     x = FData.Xm(i);
     y = FData.Ym(i);
 
     for (I=0;I<FData.NE;I++) {
-        if (  x<FData.Node(FData.Elem(I,1),0)+0.01 && x>FData.Node(FData.Elem(I,0),0)-0.01
-           && y<FData.Node(FData.Elem(I,3),1)+0.01 && y>FData.Node(FData.Elem(I,0),1)-0.01) break;
+        if (  x<FData.Node(FData.Elem(I,i1),i0)+0.01 && x>FData.Node(FData.Elem(I,i0),i0)-0.01
+           && y<FData.Node(FData.Elem(I,i3),i1)+0.01 && y>FData.Node(FData.Elem(I,i0),i1)-0.01) break;
     }
 
     CalcBi(x,y,FData.NE+1);
@@ -789,14 +790,14 @@ void __fastcall TBEM::DiagStep(int i,int j,int k)
 //---------------------------------------------------------------------------
 void __fastcall TBEM::Solve()
 {
-  MkMatrix A(FData.G);
-  MkVector X,B(FData.F);
+  MkMatrix<double> A(FData.G);
+  MkVector /*X,*/B(FData.F);
 
   A.Solve(B,stLUD);
   FData.F=(B.GetDouble());// CopyFrom is replaced with = operator which does copying
 }
 //---------------------------------------------------------------------------
-void __fastcall TBEM::Solve(MkMatrix A, MkDouble B,double &D,int N)
+void __fastcall TBEM::Solve(MkMatrix<double> A, MkDouble B,double &D,int N)
 {
 
   int N1,i,j,k,i1,l,k1,found;
@@ -1167,12 +1168,13 @@ void __fastcall TBEM::InterPrimary()
                          -H14*FData.Bc(4*j)-H24*FData.Bc(4*j+1)-H34*FData.Bc(4*j+2)-H44*FData.Bc(4*j+3);
       }
       double x,y;
+      int i0=0,i1=1,i2=2,i3=3;
       x = FData.Xi(i);
       y = FData.Yi(i);
 
       for (I=0;I<FData.NE;I++) {
-          if (  x<FData.Node(FData.Elem(I,1),0) && x>FData.Node(FData.Elem(I,0),0)
-             && y<FData.Node(FData.Elem(I,3),1) && y>FData.Node(FData.Elem(I,0),1)) break;
+          if (  x<FData.Node(FData.Elem(I,i1),i0) && x>FData.Node(FData.Elem(I,i0),i0)
+             && y<FData.Node(FData.Elem(I,i3),i1) && y>FData.Node(FData.Elem(I,i0),i1)) break;
       }
 
       if (fExecType==etSingle) CalcBi(x,y,I);
@@ -1829,15 +1831,15 @@ void __fastcall TBEM::CalcBiInter(double x, double y,int ne)
   double G31,G32,G33,G34,G41,G42,G43,G44;
   double dx,dy,I,J;
   double XLen, YLen;
-
+  int _i0=0,_i1=1,_i2=2,_i3=3;
   Bi1Inter = Bi2Inter = Bi3Inter = Bi4Inter = 0;
   for ( e = 0 ; e < FData.NE; e++){
     if (ne!=e) {
 
       NTime = 3;
 
-      XLen = FData.Node(FData.Elem(e,1),0) - FData.Node(FData.Elem(e,0),0);
-      YLen = FData.Node(FData.Elem(e,3),1) - FData.Node(FData.Elem(e,0),1);
+      XLen = FData.Node(FData.Elem(e,_i1),_i0) - FData.Node(FData.Elem(e,_i0),_i0);
+      YLen = FData.Node(FData.Elem(e,_i3),_i1) - FData.Node(FData.Elem(e,_i0),_i1);
 
       Divid = (int)pow(2.0,(double)NTime);
 
@@ -1851,18 +1853,18 @@ void __fastcall TBEM::CalcBiInter(double x, double y,int ne)
       cnode[0] = cnode[1] = 0;
 
       for (int kk=0;kk < 4;kk++) {
-         cnode[0] += FData.Node(FData.Elem(e,kk),0)/4.0;
-         cnode[1] += FData.Node(FData.Elem(e,kk),1)/4.0;
+         cnode[0] += FData.Node(FData.Elem(e,kk),_i0)/4.0;
+         cnode[1] += FData.Node(FData.Elem(e,kk),_i1)/4.0;
       }
 
       for ( i1 = 1 ; i1 <= Divid ;i1++){
         for ( j1 = 1 ; j1 <= Divid ; j1++){
           double xl,yl,xi,yi,xi1,yi1;
-          xi =  (i1>I) ? XLen/2.0+2*((i1-I)*dx)*((i1-I)*dx)/XLen+FData.Node(FData.Elem(e,0),0) : XLen/2.0-2*((i1-I)*dx)*((i1-I)*dx)/XLen+FData.Node(FData.Elem(e,0),0);
-          yi =  (j1>J) ? YLen/2.0+2*((j1-J)*dy)*((j1-J)*dy)/YLen+FData.Node(FData.Elem(e,0),1) : YLen/2.0-2*((j1-J)*dy)*((j1-J)*dy)/YLen+FData.Node(FData.Elem(e,0),1);
+          xi =  (i1>I) ? XLen/2.0+2*((i1-I)*dx)*((i1-I)*dx)/XLen+FData.Node(FData.Elem(e,_i0),_i0) : XLen/2.0-2*((i1-I)*dx)*((i1-I)*dx)/XLen+FData.Node(FData.Elem(e,_i0),_i0);
+          yi =  (j1>J) ? YLen/2.0+2*((j1-J)*dy)*((j1-J)*dy)/YLen+FData.Node(FData.Elem(e,_i0),_i1) : YLen/2.0-2*((j1-J)*dy)*((j1-J)*dy)/YLen+FData.Node(FData.Elem(e,_i0),_i1);
 
-          xi1 = ((i1-1)>I) ? XLen/2.0+2*((i1-1-I)*dx)*((i1-1-I)*dx)/XLen+FData.Node(FData.Elem(e,0),0) : XLen/2.0-2*((i1-1-I)*dx)*((i1-1-I)*dx)/XLen+FData.Node(FData.Elem(e,0),0);
-          yi1 = ((j1-1)>J) ? YLen/2.0+2*((j1-1-J)*dy)*((j1-1-J)*dy)/YLen+FData.Node(FData.Elem(e,0),1) : YLen/2.0-2*((j1-1-J)*dy)*((j1-1-J)*dy)/YLen+FData.Node(FData.Elem(e,0),1);
+          xi1 = ((i1-1)>I) ? XLen/2.0+2*((i1-1-I)*dx)*((i1-1-I)*dx)/XLen+FData.Node(FData.Elem(e,_i0),_i0) : XLen/2.0-2*((i1-1-I)*dx)*((i1-1-I)*dx)/XLen+FData.Node(FData.Elem(e,_i0),_i0);
+          yi1 = ((j1-1)>J) ? YLen/2.0+2*((j1-1-J)*dy)*((j1-1-J)*dy)/YLen+FData.Node(FData.Elem(e,_i0),_i1) : YLen/2.0-2*((j1-1-J)*dy)*((j1-1-J)*dy)/YLen+FData.Node(FData.Elem(e,_i0),_i1);
 
           xl = xi-xi1;
           yl = yi-yi1;
@@ -1928,8 +1930,8 @@ void __fastcall TBEM::CalcBiInter(double x, double y,int ne)
     else if (e==ne) {
       NTime = 6;
 
-      XLen = FData.Node(FData.Elem(e,1),0) - FData.Node(FData.Elem(e,0),0);
-      YLen = FData.Node(FData.Elem(e,3),1) - FData.Node(FData.Elem(e,0),1);
+      XLen = FData.Node(FData.Elem(e,_i1),_i0) - FData.Node(FData.Elem(e,_i0),_i0);
+      YLen = FData.Node(FData.Elem(e,_i3),_i1) - FData.Node(FData.Elem(e,_i0),_i1);
 
       Divid = (int)pow(2.0,(double)NTime);
 
@@ -1943,18 +1945,18 @@ void __fastcall TBEM::CalcBiInter(double x, double y,int ne)
       cnode[0] = cnode[1] = 0;
 
       for (int kk=0;kk < 4;kk++) {
-         cnode[0] += FData.Node(FData.Elem(e,kk),0)/4.0;
-         cnode[1] += FData.Node(FData.Elem(e,kk),1)/4.0;
+         cnode[0] += FData.Node(FData.Elem(e,kk),_i0)/4.0;
+         cnode[1] += FData.Node(FData.Elem(e,kk),_i1)/4.0;
       }
 
       for ( i1 = 1 ; i1 <= Divid ;i1++){
         for ( j1 = 1 ; j1 <= Divid ; j1++){
           double xl,yl,xi,yi,xi1,yi1;
-          xi =  (i1>I) ? XLen/2.0+2*((i1-I)*dx)*((i1-I)*dx)/XLen+FData.Node(FData.Elem(e,0),0) : XLen/2.0-2*((i1-I)*dx)*((i1-I)*dx)/XLen+FData.Node(FData.Elem(e,0),0);
-          yi =  (j1>J) ? YLen/2.0+2*((j1-J)*dy)*((j1-J)*dy)/YLen+FData.Node(FData.Elem(e,0),1) : YLen/2.0-2*((j1-J)*dy)*((j1-J)*dy)/YLen+FData.Node(FData.Elem(e,0),1);
+          xi =  (i1>I) ? XLen/2.0+2*((i1-I)*dx)*((i1-I)*dx)/XLen+FData.Node(FData.Elem(e,_i0),_i0) : XLen/2.0-2*((i1-I)*dx)*((i1-I)*dx)/XLen+FData.Node(FData.Elem(e,_i0),_i0);
+          yi =  (j1>J) ? YLen/2.0+2*((j1-J)*dy)*((j1-J)*dy)/YLen+FData.Node(FData.Elem(e,_i0),_i1) : YLen/2.0-2*((j1-J)*dy)*((j1-J)*dy)/YLen+FData.Node(FData.Elem(e,_i0),_i1);
 
-          xi1 = ((i1-1)>I) ? XLen/2.0+2*((i1-1-I)*dx)*((i1-1-I)*dx)/XLen+FData.Node(FData.Elem(e,0),0) : XLen/2.0-2*((i1-1-I)*dx)*((i1-1-I)*dx)/XLen+FData.Node(FData.Elem(e,0),0);
-          yi1 = ((j1-1)>J) ? YLen/2.0+2*((j1-1-J)*dy)*((j1-1-J)*dy)/YLen+FData.Node(FData.Elem(e,0),1) : YLen/2.0-2*((j1-1-J)*dy)*((j1-1-J)*dy)/YLen+FData.Node(FData.Elem(e,0),1);
+          xi1 = ((i1-1)>I) ? XLen/2.0+2*((i1-1-I)*dx)*((i1-1-I)*dx)/XLen+FData.Node(FData.Elem(e,_i0),_i0) : XLen/2.0-2*((i1-1-I)*dx)*((i1-1-I)*dx)/XLen+FData.Node(FData.Elem(e,_i0),_i0);
+          yi1 = ((j1-1)>J) ? YLen/2.0+2*((j1-1-J)*dy)*((j1-1-J)*dy)/YLen+FData.Node(FData.Elem(e,_i0),_i1) : YLen/2.0-2*((j1-1-J)*dy)*((j1-1-J)*dy)/YLen+FData.Node(FData.Elem(e,_i0),_i1);
 
           xl = xi-xi1;
           yl = yi-yi1;
