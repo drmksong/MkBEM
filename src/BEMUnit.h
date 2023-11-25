@@ -17,10 +17,9 @@
 #include <string.h>
 #include <stdio.h>
 #include "InputUnit.h"
-
-//#ifndef expl 
-//#define expl exp
-//#endif
+#include "BEMData.h"
+#include "InputUnit.h"
+#include "MkMisc.hpp"
 
 enum ExecType {etSingle,etStep};
 //---------------------------------------------------------------------------
@@ -60,7 +59,9 @@ private:
   double Bi1Inter,Bi2Inter,Bi3Inter,Bi4Inter;
 
 protected:
-        char FileName[256];
+      //   char FileName[256];
+      std::string FileName;
+
 public:
         TBEM();
         __fastcall void Execute();        
@@ -92,7 +93,7 @@ public:
         __fastcall void Output();
         __fastcall void BackupInternal();
         __fastcall void OutDeform();
-        __fastcall void SetInput(TBEMInput &input){FData = input;}
+        __fastcall void SetInput(TBEMInput &input){FData = input.GetData();}
         __fastcall void SetData(TBEMData &data){FData = data;}
         __fastcall void ClearG();
         __fastcall void ClearH();

@@ -12,9 +12,11 @@
 
 # ADD_EXECUTABLE(test ${srcs})
 # TARGET_LINK_LIBRARIES(test ../build/MkLib glu32 freeglut)
+SET(STATIC_LIB ${proj_name}_static)
+SET(DYNAMIC_LIB ${proj_name})
 
-SET(BINARY ${CMAKE_PROJECT_NAME}_test)
-# SET(BINARY test)
+SET(TESTER ${CMAKE_PROJECT_NAME}_test)
+# SET(TESTER test)
 
 SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR} )
 
@@ -22,8 +24,8 @@ SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR} )
 # SET(SOURCES ${TEST_SOURCES})
 SET(TEST_SOURCES test.cpp)
 
-add_executable(${BINARY} ${TEST_SOURCES})
-add_test(NAME ${BINARY} COMMAND ${BINARY})
-target_link_libraries(${BINARY} PUBLIC ${CMAKE_PROJECT_NAME} )
+add_executable(${TESTER} ${TEST_SOURCES})
+add_test(NAME ${TESTER} COMMAND ${TESTER})
+target_link_libraries(${TESTER} PUBLIC ${STATIC_LIB} )
 
 

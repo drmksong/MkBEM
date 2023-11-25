@@ -1417,71 +1417,87 @@ void __fastcall TBEM::InterSecondary()
 //---------------------------------------------------------------------------
 void __fastcall TBEM::Output()
 {
-    FILE *outfile;
-    char outname[256];
-    int i,j,k;
-    char str[256];
-    static int isfirst=0;
+  std::ofstream fs;
+  
+  std::string outname;
+  int i,j,k;
+  std::string str;
+  static bool isfirst=true; 
 
-    if (isfirst==0) {
-       outfile = fopen(FileName,"w");
-       fputs("                       Results                \n",outfile);
-       fputs("------------------------------------------------------\n",outfile);
-       fputs("      (X,Y)     Disp X    Disp Y  Temp Pressure Tract. X   Tract. Y Thermflux Flowrate\n",outfile);
+  if (isfirst==true) {
+    fs.open(FileName.c_str());
+    fs << "                       Results                \n";
+    fs << "------------------------------------------------------\n";
+    fs << "      (X,Y)     Disp X    Disp Y  Temp Pressure Tract. X   Tract. Y Thermflux Flowrate\n";
+    
+    isfirst = false;
+  }
+  else fs.open(FileName.c_str(),std::ios::app);
 
-       isfirst = 1;
+  fs << "Time = " << Tau/3600/24/365 << " year\n";
+
+  for ( i=0 ; i<FData.N ; i++ ) {
+    str = "(" + std::to_string(FData.Xm(i)) + "," + std::to_string(FData.Ym(i)) + ") " + std::to_string(FData.Bc(4*i)) + " " + std::to_string(FData.Bc(4*i+1)) + " " + std::to_string(FData.Bc(4*i+2)+283) + " " + std::to_string(FData.Bc(4*i+3)) + " " + std::to_string(FData.F(4*i)) + " " + std::to_string(FData.F(4*i+1)) + " " + std::to_string(FData.F(4*i+2)) + " " + std::to_string(FData.F(4*i+3)) + "\n";
+    fs << str;
+  }
+  if(FData.L!=0)  {
+    fs << "       	Interior Points Displacement    \n";
+    fs << "      (Xi,Yi)   Disp X   Disp Y  \n";
+    for ( k=0 ; k<FData.L ; k++ ) {
+      str = "(" + std::to_string(FData.Xi(k)) + "," + std::to_string(FData.Yi(k)) + ") " + std::to_string(FData.Displ(2*k)) + " " + std::to_string(FData.Displ(2*k+1)) + " " + std::to_string(FData.Temp(k)+283) + " " + std::to_string(FData.Press(k)) + "\n";
+      fs << str;
     }
-    else outfile = fopen(FileName,"a");
-
-    fprintf(outfile, "Time = %lf year\n", (Tau)/3600/24/365);
-
-    for ( i=0 ; i<FData.N ; i++ ) {
-      snprintf(str,256,"(%10.5f, %10.5f) %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f \n",
-          FData.Xm(i),FData.Ym(i),FData.Bc(4*i),FData.Bc(4*i+1),FData.Bc(4*i+2)+283,FData.Bc(4*i+3),FData.F(4*i),FData.F(4*i+1),FData.F(4*i+2),FData.F(4*i+3));
-      fputs(str,outfile);
-    }
-    if(FData.L!=0)  {
-      fputs("",outfile);
-      fputs("       	Interior Points Displacement    \n",outfile);
-      fputs("      (Xi,Yi)   Disp X   Disp Y  \n",outfile);
-      for ( k=0 ; k<FData.L ; k++ ) {
-        snprintf(str,256,"(%10.5f,%10.5f) %15.5f %15.5f %15.5f %15.5f\n",FData.Xi(k),FData.Yi(k),FData.Displ(2*k),FData.Displ(2*k+1),FData.Temp(k)+283,FData.Press(k));
-        fputs(str,outfile);
-      }
-      fputs("",outfile);
-      fputs("       	Interior Points Stress    \n",outfile);
-      fputs("      (Xi,Yi)   Stress X   Stress Y  \n",outfile);
-      for ( k=0 ; k<FData.L ; k++ ) {
-        snprintf(str,256,"(%10.5f,%10.5f) %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f\n",
-                       FData.Xi(k),FData.Yi(k),FData.Stress(3*k),FData.Stress(3*k+1),FData.Stress(3*k+2),FData.ThermFlux(2*k),FData.ThermFlux(2*k+1),FData.FlowRate(2*k),FData.FlowRate(2*k+1));
-        fputs(str,outfile);
-      }
-
-/*      int NN;
-      NN = FData.N;
-      for (int j = 0 ; j < NN ; j++) {
-        for (int i = 0 ; i < NN ; i++) {
-           if (i==0) fputs("|",outfile);
-           snprintf(str,256," %9.5f ",FData.G(4*i+1,4*j+1));
-           fputs(str,outfile);
-           if (i==NN-1) fputs("|",outfile);
-        }
-        snprintf(str,256," %9.5f = ",FData.F(4*j+1));
-        fputs(str,outfile);
-
-        for (int i = 0 ; i < NN ; i++) {
-           if (i==0) fputs("|",outfile);
-           snprintf(str,256," %9.5f ",FData.H(4*i+1,4*j+1));
-           fputs(str,outfile);
-           if (i==NN-1) fputs("|",outfile);
-        }
-        snprintf(str,256," %9.5f \n",FData.Bc(4*j+1));
-        fputs(str,outfile);
-      }
-*/
+    fs << "       	Interior Points Stress    \n";
+    fs << "      (Xi,Yi)   Stress X   Stress Y  \n";
+    for ( k=0 ; k<FData.L ; k++ ) {
+      str = "(" + std::to_string(FData.Xi(k)) + "," + std::to_string(FData.Yi(k)) + ") " + std::to_string(FData.Stress(3*k)) + " " + std::to_string(FData.Stress(3*k+1)) + " " + std::to_string(FData.Stress(3*k+2)) + " " + std::to_string(FData.ThermFlux(2*k)) + " " + std::to_string(FData.ThermFlux(2*k+1)) + " " + std::to_string(FData.FlowRate(2*k)) + " " + std::to_string(FData.FlowRate(2*k+1)) + "\n";
+      fs << str;
     }
 
-    fclose(outfile);
+  }
+    // FILE *outfile;
+    // char outname[256];
+    // int i,j,k;
+    // char str[256];
+    // static int isfirst=0;
+
+    // if (isfirst==0) {
+    //    outfile = fopen(FileName,"w");
+    //    fputs("                       Results                \n",outfile);
+    //    fputs("------------------------------------------------------\n",outfile);
+    //    fputs("      (X,Y)     Disp X    Disp Y  Temp Pressure Tract. X   Tract. Y Thermflux Flowrate\n",outfile);
+
+    //    isfirst = 1;
+    // }
+    // else outfile = fopen(FileName,"a");
+
+    // fprintf(outfile, "Time = %lf year\n", (Tau)/3600/24/365);
+
+    // for ( i=0 ; i<FData.N ; i++ ) {
+    //   snprintf(str,256,"(%10.5f, %10.5f) %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f \n",
+    //       FData.Xm(i),FData.Ym(i),FData.Bc(4*i),FData.Bc(4*i+1),FData.Bc(4*i+2)+283,FData.Bc(4*i+3),FData.F(4*i),FData.F(4*i+1),FData.F(4*i+2),FData.F(4*i+3));
+    //   fputs(str,outfile);
+    // }
+    // if(FData.L!=0)  {
+    //   fputs("",outfile);
+    //   fputs("       	Interior Points Displacement    \n",outfile);
+    //   fputs("      (Xi,Yi)   Disp X   Disp Y  \n",outfile);
+    //   for ( k=0 ; k<FData.L ; k++ ) {
+    //     snprintf(str,256,"(%10.5f,%10.5f) %15.5f %15.5f %15.5f %15.5f\n",FData.Xi(k),FData.Yi(k),FData.Displ(2*k),FData.Displ(2*k+1),FData.Temp(k)+283,FData.Press(k));
+    //     fputs(str,outfile);
+    //   }
+    //   fputs("",outfile);
+    //   fputs("       	Interior Points Stress    \n",outfile);
+    //   fputs("      (Xi,Yi)   Stress X   Stress Y  \n",outfile);
+    //   for ( k=0 ; k<FData.L ; k++ ) {
+    //     snprintf(str,256,"(%10.5f,%10.5f) %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f %15.5f\n",
+    //                    FData.Xi(k),FData.Yi(k),FData.Stress(3*k),FData.Stress(3*k+1),FData.Stress(3*k+2),FData.ThermFlux(2*k),FData.ThermFlux(2*k+1),FData.FlowRate(2*k),FData.FlowRate(2*k+1));
+    //     fputs(str,outfile);
+    //   }
+
+    // }
+
+    // fclose(outfile);
 
 }
 //---------------------------------------------------------------------------
@@ -3528,23 +3544,27 @@ void __fastcall TBEM::Calch(double Xp,double Yp, double X1,double Y1,double X2,d
 //---------------------------------------------------------------------------
 TTHMBEM::TTHMBEM(TBEMInput &input) : TBEM()
 {
-    char str[256];
-    char ext[256];
+    // char str[256];
+    // char ext[256];
+    std::string str(256,'\0');
+    std::string ext(256,'\0');
 
     SetInput(input);
 
-    memset(str,'\0',255);
-    memset(ext,'\0',255);
+    // memset(str,'\0',255);
+    // memset(ext,'\0',255);
     ExtractFileExt(ext,input.GetName());
-    strncpy(str,input.GetName(),strlen(input.GetName())-strlen(ext));
-    strcat(str,".out");
-    strcpy(FileName,str);
+    str = input.GetName().substr(0,input.GetName().length()-ext.length());
+    str += ".out";
+    // strncpy(str,input.GetName(),strlen(input.GetName())-strlen(ext));
+    // strcat(str,".out");
+    FileName=str;
 }
 //---------------------------------------------------------------------------
 TTHMBEM::TTHMBEM(TBEMData &data):TBEM()
 {
     SetData(data);
-    strcpy(FileName,"4verify.out");
+    FileName = "4verify.out";
 }
 //---------------------------------------------------------------------------
  
