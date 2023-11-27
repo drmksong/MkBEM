@@ -3546,9 +3546,8 @@ TTHMBEM::TTHMBEM(TBEMInput &input) : TBEM()
 {
     // char str[256];
     // char ext[256];
-    std::string str(256,'\0');
-    std::string ext(256,'\0');
-
+    std::string str,ext;
+    
     SetInput(input);
 
     // memset(str,'\0',255);

@@ -26,6 +26,6 @@ SET(TEST_SOURCES test.cpp)
 
 add_executable(${TESTER} ${TEST_SOURCES})
 add_test(NAME ${TESTER} COMMAND ${TESTER})
-target_link_libraries(${TESTER} PUBLIC ${STATIC_LIB} )
+target_link_libraries(${TESTER} PUBLIC ${DYNAMIC_LIB} )
 
 

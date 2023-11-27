@@ -11,19 +11,19 @@ SET(CMAKE_CXX_STANDARD 20)
 SET(CMAKE_CXX_FLAGS -pg)
 SET(CMAKE_EXE_LINKER_FLAGS  -pg)
 
-# SET (INC_FILES_FOR_EXE
-#         src/mainunit.h
-#         src/bemdata.h
-#         src/bemunit.h
-#         src/inputunit.h
-# )
+SET (INC_FILES_FOR_EXE
+        src/mainunit.h
+        src/bemdata.h
+        src/bemunit.h
+        src/inputunit.h
+)
 
-# SET (SRC_FILES_FOR_EXE
-#         src/mainunit.cpp
-#         src/bemdata.cpp
-#         src/bemunit.cpp
-#         src/inputunit.cpp
-# )
+SET (SRC_FILES_FOR_EXE
+        src/mainunit.cpp
+        src/bemdata.cpp
+        src/bemunit.cpp
+        src/inputunit.cpp
+)
 
 SET (INC_FILES_FOR_LIB
         src/bemdata.h
