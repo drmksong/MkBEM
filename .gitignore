@@ -1,0 +1,8 @@
+.env
+*.~*
+*~
+obsolete
+.DS_Store
+*.*bak
+
+build
