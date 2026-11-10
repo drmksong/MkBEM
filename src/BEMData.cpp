@@ -2,9 +2,9 @@
 
 TBEMData::TBEMData()
 {
-  D = Mu = Nu = 0;
+  D = Mu = Nu = Lambda = K_T = K_P = Alpha_T = Alpha_P = T_0 = Eta = Tau = Rho = Cp = K = B = Beta_TS = 0;
   N = L = M = 0;
-  NI = NE = NT = NS = 0;
+  NI = NE = NT = NS = NSH = NSF = 0;
 }
 
 TBEMData &TBEMData::operator=(TBEMData &data)

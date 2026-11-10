@@ -1,21 +1,19 @@
 //---------------------------------------------------------------------------
 #include "BEMUnit.h"
-//---------------------------------------------------------------------------
-//   Important: Methods and properties of objects in VCL can only be
-//   used in a method called using Synchronize, for example:
-//
-//      Synchronize(UpdateCaption);
-//
-//   where UpdateCaption could look like:
-//
-//      void __fastcall Unit1::UpdateCaption()
-//      {
-//        Form1->Caption = "Updated in a thread";
-//      }
-//---------------------------------------------------------------------------
+#include <cmath>
+#include <filesystem>
+#include <stdexcept>
 
 double sqr(double a){return a*a;}
 double cube(double a){return a*a*a;}
+
+namespace
+{
+  bool IsNearZero(double value)
+  {
+    return std::fabs(value) <= 1.0e-12;
+  }
+}
 
 double E1(double x)
 {
@@ -85,8 +83,16 @@ void __fastcall TBEM::CalcParam()
   rho = FData.Rho;
   Cp = FData.Cp;
   B = FData.B;
+  if (IsNearZero(1.0 - 2.0 * nu))
+    throw std::runtime_error("Invalid Poisson ratio: Nu is too close to 0.5");
+  if (K_T <= 0.0 || K_P <= 0.0 || rho <= 0.0 || Cp <= 0.0 || B <= 0.0)
+    throw std::runtime_error("Invalid material properties: K_T, K_P, Rho, Cp, and B must be positive");
+
   FData.Lambda =2*FData.Mu*FData.Nu/(1-2*FData.Nu);
   K = FData.K = 3*FData.Lambda+2*FData.Mu;
+  if (K <= 0.0)
+    throw std::runtime_error("Invalid material properties: computed bulk modulus K must be positive");
+
   FData.Alpha_T = FData.K*FData.Beta_TS;
   at = FData.Alpha_T;
   ap = FData.Alpha_P;
@@ -97,10 +103,14 @@ void __fastcall TBEM::CalcParam()
   B1 = 2;
   B2 = 1;
   B3 =sqrt(rho*Cp/K_T);//rho*
+  if (ap / (K_P * K * B) < 0.0)
+    throw std::runtime_error("Invalid material properties: hydraulic expansion term gives a negative square-root argument");
   B4 =sqrt(ap/(K_P*K*B));
   a = rho*Cp/K_T+ap/(K_P*K*B)+(at*at*t0*K_P+ap*ap*K_T)/(lmm*K_P*K_T);
   b = rho*Cp*ap/(K_T*K_P*K*B)+(-lmm*eta*eta*t0
       +at*at*t0*B4*B4*K_P+ap*ap*B3*B3*K_T-2*at*eta*t0*ap)/(lmm*K_T*K_P);
+  if (b < 0.0)
+    throw std::runtime_error("Invalid material properties: coupled diffusion parameter b is negative");
 
   a1 = a + 4*sqrt(b);
   a2 = a - 4*sqrt(b);
@@ -113,6 +123,9 @@ void __fastcall TBEM::CalcParam()
     B1 = b1 = (sqrt(a1)+sqrt(a2))/2;
     B2 = b2 = (sqrt(a1)-sqrt(a2))/2;
   }
+  if (IsNearZero(B1) || IsNearZero(B2) || IsNearZero(B1*B1-B2*B2))
+    throw std::runtime_error("Invalid material properties: characteristic roots are singular");
+
   Q = mu*(at*at*t0*K_P*B4*B4+ap*ap*K_T*B3*B3+2*at*eta*t0*ap)/(B1*B1*B2*B2*lm*lmm); // changed - to +
   
   a1_ij=-mu*(at*at*t0*K_P*(B1*B1-B4*B4)+ap*ap*K_T*(B1*B1-B3*B3)-2*at*eta*t0*ap)/(B1*B1*(B1*B1-B2*B2)*lm*lmm);
@@ -793,7 +806,8 @@ void __fastcall TBEM::Solve()
   MkMatrix<double> A(FData.G);
   MkVector /*X,*/B(FData.F);
 
-  A.Solve(B,stLUD);
+  if (!A.Solve(B,stLUD))
+    throw std::runtime_error("Failed to solve BEM linear system: matrix is singular or ill-conditioned");
   FData.F=(B.GetDouble());// CopyFrom is replaced with = operator which does copying
 }
 //---------------------------------------------------------------------------
@@ -812,7 +826,7 @@ void __fastcall TBEM::Solve(MkMatrix<double> A, MkDouble B,double &D,int N)
 
     if( (fabs(c) - EPS) <=0 )  {
       found = 0;
-      for ( j=k1 ; k<=N ; k++ )  { // {Interchange rows to get Nonzero }
+      for ( j=k1 ; j<=N ; j++ )  { // {Interchange rows to get Nonzero }
         if( (fabs(A(j,k)) - EPS) > 0.0 )  {
           for ( l=k ; l<=N ; l++ )  {
             c = A(k,l);
@@ -3544,20 +3558,11 @@ void __fastcall TBEM::Calch(double Xp,double Yp, double X1,double Y1,double X2,d
 //---------------------------------------------------------------------------
 TTHMBEM::TTHMBEM(TBEMInput &input) : TBEM()
 {
-    // char str[256];
-    // char ext[256];
-    std::string str,ext;
-    
     SetInput(input);
 
-    // memset(str,'\0',255);
-    // memset(ext,'\0',255);
-    ExtractFileExt(ext,input.GetName());
-    str = input.GetName().substr(0,input.GetName().length()-ext.length());
-    str += ".out";
-    // strncpy(str,input.GetName(),strlen(input.GetName())-strlen(ext));
-    // strcat(str,".out");
-    FileName=str;
+  std::filesystem::path outPath(input.GetName());
+  outPath.replace_extension(".out");
+  FileName=outPath.string();
 }
 //---------------------------------------------------------------------------
 TTHMBEM::TTHMBEM(TBEMData &data):TBEM()

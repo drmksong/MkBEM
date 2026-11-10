@@ -1,0 +1,12 @@
+name: bem
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy
+  - pandas
+  - pyqt
+  - pyvista
+  - pyvistaqt
+  - matplotlib
+  - pip

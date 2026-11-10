@@ -1,5 +1,6 @@
 //---------------------------------------------------------------------------
 #include "MainUnit.h"
+#include <exception>
 //---------------------------------------------------------------------------
 void usage(std::string fname)
 {
@@ -29,8 +30,14 @@ int main(int argc, char *argv[])
   }
 
   if(FBEMInput.ReadFile(fname)){
-    TTHMBEM FBEM(FBEMInput);
-    FBEM.Execute();
+    try {
+      TTHMBEM FBEM(FBEMInput);
+      FBEM.Execute();
+    }
+    catch (const std::exception &error) {
+      std::cerr << "MkBEM error: " << error.what() << std::endl;
+      return 1;
+    }
   }
   else{
     usage(argv[0]);

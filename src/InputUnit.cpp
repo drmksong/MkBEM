@@ -2,6 +2,40 @@
 #include <stdio.h>
 #include "InputUnit.h"
 
+namespace
+{
+  std::string StripComment(const std::string &line)
+  {
+    const std::string::size_type comment = line.find(';');
+    if (comment == std::string::npos)
+      return line;
+    return line.substr(0, comment);
+  }
+
+  bool IsNumericToken(const std::string &token)
+  {
+    bool hasDigit = false;
+    for (std::string::size_type i = 0; i < token.size(); i++)
+    {
+      const char ch = token[i];
+      if (ch >= '0' && ch <= '9')
+      {
+        hasDigit = true;
+        continue;
+      }
+      if (ch == '+' || ch == '-' || ch == '.' || ch == 'e' || ch == 'E')
+        continue;
+      return false;
+    }
+    return hasDigit;
+  }
+
+  bool IsSourceTypeToken(const std::string &token)
+  {
+    return token == "HEAT" || token == "FLUID";
+  }
+}
+
 bool TBEMInput::ReadFile()
 {
   if (FileName == "")
@@ -19,11 +53,27 @@ bool TBEMInput::ReadFile()
   }
 
   std::string line;
-  
-  fs >> line;
+
+  std::getline(fs, line);
   std::cout << "Input::" << line << std::endl;
 
-  fs >> FData.N >> FData.L >> FData.M >> FData.NS;
+  std::stringstream data;
+  while (std::getline(fs, line))
+    data << StripComment(line) << '\n';
+
+  std::string token;
+  while (data >> token)
+  {
+    if (!IsNumericToken(token) && !IsSourceTypeToken(token))
+    {
+      std::cout << "Invalid input token: " << token << std::endl;
+      return false;
+    }
+  }
+
+  std::stringstream input(data.str());
+
+  input >> FData.N >> FData.L >> FData.M >> FData.NS;
   // # of Boundary elem, Interior elem, Different bound.
   if (!FData.N)
     return false;
@@ -39,10 +89,9 @@ bool TBEMInput::ReadFile()
       FData.Last.Initialize(FData.M);
     for (int i = 0; i < FData.M; i++)
       FData.Last(i) = 0;
-    fs >> line;
     for (int i = 0; i < FData.M; i++)
     {
-      fs >> FData.Last(i);
+      input >> FData.Last(i);
       std::cout << "Last node on  boundary " << i << " = " << FData.Last(i) << std::endl;
     };
   };
@@ -82,7 +131,7 @@ bool TBEMInput::ReadFile()
   if (FData.L)
     FData.FlowRate.Initialize(2 * FData.L);
 
-  fs >> FData.NI >> FData.NE >> FData.NT;
+  input >> FData.NI >> FData.NE >> FData.NT;
   // # of NI(Internal Node) NT(Time) NE(Internal Cell) NS(N of Src)
 
   std::cout << " Number of Internal Node = " << FData.NI << std::endl;
@@ -114,25 +163,25 @@ bool TBEMInput::ReadFile()
   if (FData.NE)
     FData.neYi.Initialize(FData.NE);
   
-  fs >> FData.Mu >> FData.Nu;
+  input >> FData.Mu >> FData.Nu;
   std::cout << "Shear modulus = " << FData.Mu << std::endl;
   std::cout << "Poisson ratio = " << FData.Nu << std::endl;
 
-  fs >> FData.K_T >> FData.K_P;
+  input >> FData.K_T >> FData.K_P;
   std::cout << "Thermal Conductivity = " << FData.K_T << std::endl;
   std::cout << "Hydraulic Conductivity = " << FData.K_P << std::endl;
 
-  fs >> FData.Beta_TS >> FData.Alpha_P >> FData.T_0;
-  std::cout << "Coeff of elasticity = " << FData.Alpha_T << std::endl;
-  std::cout << "Thermal Conductivity = " << FData.Alpha_P << std::endl;
-  std::cout << "Hydraulic Conductivity = " << FData.T_0 << std::endl;
+  input >> FData.Beta_TS >> FData.Alpha_P >> FData.T_0;
+  std::cout << "Thermal strain coefficient = " << FData.Beta_TS << std::endl;
+  std::cout << "Hydraulic expansion coefficient = " << FData.Alpha_P << std::endl;
+  std::cout << "Initial absolute temperature = " << FData.T_0 << std::endl;
 
-  fs >> FData.Eta >> FData.Rho >> FData.Cp;
+  input >> FData.Eta >> FData.Rho >> FData.Cp;
   std::cout << "Thermal expansion coeff = " << FData.Eta << std::endl;
   std::cout << "Density = " << FData.Rho << std::endl;
   std::cout << "Specific heat = " << FData.Cp << std::endl;
 
-  fs >> FData.B;
+  input >> FData.K >> FData.B;
   std::cout << "Skemton coefficient = " << FData.B << std::endl;
 
   std::cout << " Cordinates of The Extreme" << std::endl;
@@ -141,7 +190,7 @@ bool TBEMInput::ReadFile()
   std::cout << "Point    X          Y " << std::endl;
   for (int i = 0; i < FData.N; i++)
   {
-    fs >> FData.X(i) >> FData.Y(i);
+    input >> FData.X(i) >> FData.Y(i);
     std::cout << i << " " << FData.X(i) << " " << FData.Y(i) << std::endl;
   }
   FData.X(FData.N) = FData.X(0);
@@ -158,7 +207,7 @@ bool TBEMInput::ReadFile()
 
   for (int i = 0; i < FData.N; i++)
   {
-    fs >> FData.Code(4 * i) >> FData.Bc(4 * i) >> FData.Code(4 * i + 1) >> FData.Bc(4 * i + 1) >> FData.Code(4 * i + 2) >> FData.Bc(4 * i + 2) >> FData.Code(4 * i + 3) >> FData.Bc(4 * i + 3);
+    input >> FData.Code(4 * i) >> FData.Bc(4 * i) >> FData.Code(4 * i + 1) >> FData.Bc(4 * i + 1) >> FData.Code(4 * i + 2) >> FData.Bc(4 * i + 2) >> FData.Code(4 * i + 3) >> FData.Bc(4 * i + 3);
   }
 
   for (int i = 0; i < FData.N; i++)
@@ -176,7 +225,7 @@ bool TBEMInput::ReadFile()
     std::cout << "Point    Xi         Yi" << std::endl;
     for (int i = 0; i < FData.L; i++)
     {
-      fs >> FData.Xi(i) >> FData.Yi(i);
+      input >> FData.Xi(i) >> FData.Yi(i);
       std::cout << i << " " << FData.Xi(i) << " " << FData.Yi(i) << std::endl;
     }
   }
@@ -187,7 +236,7 @@ bool TBEMInput::ReadFile()
     std::cout << " Index Time" << std::endl;
     for (int i = 0; i < FData.NT; i++)
     {
-      fs >> FData.Time(i);
+      input >> FData.Time(i);
       std::cout << i << " " << FData.Time(i) << std::endl;
     }
   }
@@ -199,7 +248,7 @@ bool TBEMInput::ReadFile()
     
     for (int i = 0; i < FData.NS; i++)
     {
-      fs >> SrcType[i] >> TempSrc(i) >> TempX(i) >> TempY(i);
+      input >> SrcType[i] >> TempSrc(i) >> TempX(i) >> TempY(i);
       std::cout << SrcType[i] << " " << TempSrc(i) << " " << TempX(i) << " " << TempY(i) << std::endl;
     }
     FData.NSH = FData.NSF = 0;

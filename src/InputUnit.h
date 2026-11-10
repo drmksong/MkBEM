@@ -19,7 +19,7 @@ class TBEMInput
 private:
    std::string FileName; // input file name
    TBEMData FData;
-   bool readStatus;
+   bool readStatus = false;
    int _i0 = 0, _i1 = 1, _i2 = 2, _i3 = 3;
 
 public:
